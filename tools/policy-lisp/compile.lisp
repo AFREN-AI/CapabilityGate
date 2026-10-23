@@ -44,7 +44,7 @@
                (when (or (zerop (length symbol)) (find-if (lambda (c) (find c "#'`,;")) symbol))
                  (fail "reader syntax and comments are not allowed"))
                 (emit (string-downcase symbol)))))))
-      (coerce (nreverse tokens) 'vector))))))
+      (coerce (nreverse tokens) 'vector)))))
 
 (defun parse-forms (tokens)
   (let ((index 0) (length (length tokens)))

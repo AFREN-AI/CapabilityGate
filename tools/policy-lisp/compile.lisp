@@ -122,7 +122,7 @@
     (let* ((capabilities (unique-values (mapcar (lambda (x) (string-value x "capability")) (rest capability-form)) "capability"))
            (tools (mapcar (lambda (item) (compile-tool item capabilities)) tool-forms)))
       (unique-values (mapcar #'first tools) "tool")
-      (format nil "{~%  \"granted_capabilities\": ~a,~%  \"tools\": [~%~{~a~^,~%~}%  ]~%}~%"
+      (format nil "{~%  \"granted_capabilities\": ~a,~%  \"tools\": [~%~{~a~^,~%~}~%  ]~%}~%"
               (json-array capabilities)
               (mapcar (lambda (tool) (concatenate 'string "    " (second tool))) tools)))))
 

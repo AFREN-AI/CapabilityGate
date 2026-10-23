@@ -21,5 +21,6 @@ jobs:
       - run: dotnet build CapabilityGate.sln --no-restore --configuration Release
       - run: dotnet test CapabilityGate.sln --no-build --configuration Release
       - run: mkdir -p artifacts && sbcl --script tools/policy-lisp/compile.lisp tools/policy-lisp/examples/minimal.sexp > artifacts/policy.json
+      - run: cat artifacts/policy.json
       - run: jq -e '.granted_capabilities == ["search.read","mail.send"] and (.tools | length) == 2' artifacts/policy.json
       - run: if sbcl --script tools/policy-lisp/compile.lisp tools/policy-lisp/examples/invalid-form.sexp > /dev/null 2>&1; then echo 'invalid Lisp policy was accepted'; exit 1; fi

@@ -13,9 +13,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+      - run: sudo apt-get update && sudo apt-get install --yes sbcl jq
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
       - run: dotnet restore CapabilityGate.sln
       - run: dotnet build CapabilityGate.sln --no-restore --configuration Release
       - run: dotnet test CapabilityGate.sln --no-build --configuration Release
+      - run: mkdir -p artifacts && sbcl --script tools/policy-lisp/compile.lisp tools/policy-lisp/examples/minimal.sexp > artifacts/policy.json
+      - run: jq -e '.granted_capabilities == ["search.read","mail.send"] and (.tools | length) == 2' artifacts/policy.json
+      - run: if sbcl --script tools/policy-lisp/compile.lisp tools/policy-lisp/examples/invalid-form.sexp > /dev/null 2>&1; then echo 'invalid Lisp policy was accepted'; exit 1; fi

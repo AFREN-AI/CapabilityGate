@@ -90,6 +90,34 @@ public sealed class ExecutionTests
         Assert.Throws<InvalidPlanException>(() => ExecutionPlan.Freeze(calls));
     }
 
+    [Fact]
+    public async Task JsonPolicyLoadsAndStillEnforcesDefaultDeny()
+    {
+        const string json = """
+            {"granted_capabilities":["search.read"],"tools":[{"tool_name":"search.read","required_capability":"search.read","allowed_argument_sources":{"query":["UserIntent"]},"allowed_control_sources":["UserIntent"]}]}
+            """;
+        var policy = CapabilityPolicy.FromJson(json);
+        var executor = new RecordingExecutor();
+        var engine = new ExecutionEngine(policy, executor);
+        var result = await engine.ExecutePlanAsync(ExecutionPlan.Freeze([MakeCall("search.read", TrustClass.UserIntent)]));
+
+        Assert.True(result.Records[0].Allowed);
+        Assert.Single(executor.Calls);
+    }
+
+    [Fact]
+    public void JsonPolicyRejectsUnknownFieldsAndTrustClasses()
+    {
+        const string unknownTrust = """
+            {"granted_capabilities":["x"],"tools":[{"tool_name":"x","required_capability":"x","allowed_argument_sources":{},"allowed_control_sources":["Untrusted"]}]}
+            """;
+        const string unknownField = """
+            {"granted_capabilities":[],"tools":[],"allow_everything":true}
+            """;
+        Assert.Throws<JsonException>(() => CapabilityPolicy.FromJson(unknownTrust));
+        Assert.Throws<JsonException>(() => CapabilityPolicy.FromJson(unknownField));
+    }
+
     private static ToolCall MakeCall(string name, TrustClass trust)
     {
         using var document = JsonDocument.Parse("\"query\"");

@@ -10,6 +10,8 @@ The gate aims to prevent a tool from executing unless the host explicitly grante
 - Tainted model output used as a tool argument or to select a tool.
 - Missing tool registrations or capabilities.
 - Malformed and oversized static plans.
+- Malformed policy JSON and unsupported policy source labels.
+- Malformed Lisp policy data passed to the restricted policy compiler.
 
 ## Assumptions
 
@@ -29,3 +31,5 @@ The gate aims to prevent a tool from executing unless the host explicitly grante
 ## Limitations
 
 The library cannot inspect hidden provider state, model internals, network traffic, or an executor's behavior. The quarantine interface constrains the library API but does not create an operating-system sandbox. A wrapper or detector alone is not a security boundary.
+
+The Common Lisp compiler treats policy files as data and does not evaluate forms. Its output is configuration, not a sandbox. Protect policy files and review the compiled JSON before loading it.

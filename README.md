@@ -12,6 +12,7 @@ This is an early security library, not a production certification and not a univ
 - Keep untrusted text handling behind an IQuarantinedModel interface that has no tool-execution API. Quarantined output remains tainted.
 - Pass tool calls to executors only through AuthorizedToolCall; its constructor is internal.
 - Return decision records without argument values to avoid copying sensitive inputs into audit output.
+- Load strict JSON policy documents through `CapabilityPolicy.FromJson`.
 
 The host is the root of trust. It must mark source provenance correctly, prevent untrusted content from entering the planner as trusted intent, and ensure all consequential tools execute through this boundary. The current API expects the host to supply a fixed plan; it does not connect to an LLM or generate plans.
 
@@ -26,6 +27,16 @@ CaMeL separates a planner from a quarantined model, propagates data and control 
 The API is under development. Build from source with the .NET 10 SDK. CI installs the SDK on GitHub-hosted runners; this project does not require a local SDK installation.
 
 The first release includes the .NET library only. A TypeScript wrapper can follow after the .NET contract and threat model stabilize.
+
+## Optional Common Lisp policy compiler
+
+`tools/policy-lisp/compile.lisp` compiles a restricted S-expression policy file to the strict JSON format accepted by `CapabilityPolicy.FromJson`:
+
+```sh
+sbcl --script tools/policy-lisp/compile.lisp tools/policy-lisp/examples/minimal.sexp > policy.json
+```
+
+Policy files are parsed as data by a small tokenizer and parser. The compiler does not call the Lisp reader or evaluate input forms, and rejects unrecognized forms and trust labels. The generated file still requires review and the .NET reference monitor remains the enforcement point. CI checks valid output and rejects an invalid example. SBCL is installed only on the GitHub-hosted runner.
 
 ## Security reporting
 

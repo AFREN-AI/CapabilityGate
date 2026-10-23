@@ -43,8 +43,8 @@
              (let ((symbol (subseq source start index)))
                (when (or (zerop (length symbol)) (find-if (lambda (c) (find c "#'`,;")) symbol))
                  (fail "reader syntax and comments are not allowed"))
-               (emit (string-downcase symbol))))))
-      (coerce (nreverse tokens) 'vector)))))
+                (emit (string-downcase symbol)))))))
+      (coerce (nreverse tokens) 'vector))))))
 
 (defun parse-forms (tokens)
   (let ((index 0) (length (length tokens)))
@@ -144,7 +144,7 @@
                     (format nil "{\"tool_name\":~a,\"required_capability\":~a,\"allowed_argument_sources\":{~a},\"allowed_control_sources\":~a}"
                             (json-string name) (json-string required)
                             (format nil "~{~a~^,~}" (mapcar (lambda (entry) (format nil "~a:~a" (json-string (car entry)) (json-array (cdr entry)))) arg-pairs))
-                            (json-array control-sources))))))
+                            (json-array control-sources)))))))
 
 (defun main ()
   (handler-case
@@ -154,7 +154,7 @@
         (with-open-file (input path :direction :input :external-format :utf-8)
           (let* ((source (with-output-to-string (out) (loop for line = (read-line input nil nil) while line do (write-line line out))))
                  (form (parse-forms (tokenize source))))
-            (write-string (compile-policy form))))
+            (write-string (compile-policy form)))))
     (error (condition)
       (format *error-output* "~&~a~%" condition)
       (sb-ext:exit :code 2))))

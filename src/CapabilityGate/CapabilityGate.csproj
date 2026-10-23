@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>CapabilityGate</AssemblyName>
+    <RootNamespace>CapabilityGate</RootNamespace>
+    <PackageId>CapabilityGate</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Default-deny tool authorization and provenance tracking for agent workflows.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>

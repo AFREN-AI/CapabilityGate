@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore CapabilityGate.sln
+      - run: dotnet build CapabilityGate.sln --no-restore --configuration Release
+      - run: dotnet test CapabilityGate.sln --no-build --configuration Release

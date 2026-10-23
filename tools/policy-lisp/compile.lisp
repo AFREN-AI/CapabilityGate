@@ -29,7 +29,7 @@
                             (#\r (write-char #\Return value))
                             (#\t (write-char #\Tab value))
                             (otherwise (fail "unsupported string escape")))))
-                       (otherwise (write-char current value)))))
+                       (t (write-char current value)))))
                  (emit-token (list :string (get-output-stream-string value)))))
              (read-atom-token ()
                (let ((start index))

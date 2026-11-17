@@ -2,10 +2,22 @@
   <PropertyGroup>
     <AssemblyName>CapabilityGate</AssemblyName>
     <RootNamespace>CapabilityGate</RootNamespace>
-    <PackageId>CapabilityGate</PackageId>
-    <Version>0.1.0</Version>
+    <PackageId>AfrenAI.CapabilityGate</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>AFREN AI</Authors>
+    <Company>AFREN AI</Company>
     <Description>Default-deny tool authorization and provenance tracking for agent workflows.</Description>
+    <PackageTags>agents;capability-security;prompt-injection;provenance;ai</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/AFREN-AI/CapabilityGate</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AFREN-AI/CapabilityGate</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

@@ -1,6 +1,11 @@
 name: CI
 
+# One workflow: every run tests and packs; a v* tag also publishes the exact
+# packages that were tested, once every check has passed.
 on:
+  push:
+    branches: [main]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
@@ -16,10 +21,65 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install --yes sbcl jq
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            10.0.x
+            11.0.x
+      - name: Resolve package version
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            PACKAGE_VERSION="${GITHUB_REF_NAME#v}"
+          else
+            PACKAGE_VERSION="$(dotnet msbuild src/CapabilityGate/CapabilityGate.csproj -getProperty:Version)"
+          fi
+          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Version must be a semantic version, got '$PACKAGE_VERSION'." >&2
+            exit 1
+          fi
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> "$GITHUB_ENV"
       - run: dotnet restore CapabilityGate.sln
       - run: dotnet build CapabilityGate.sln --no-restore --configuration Release
       - run: dotnet test CapabilityGate.sln --no-build --configuration Release
       - run: mkdir -p artifacts && sbcl --script tools/policy-lisp/compile.lisp tools/policy-lisp/examples/minimal.sexp > artifacts/policy.json
       - run: jq -e '.granted_capabilities == ["search.read","mail.send"] and (.tools | length) == 2' artifacts/policy.json
       - run: if sbcl --script tools/policy-lisp/compile.lisp tools/policy-lisp/examples/invalid-form.sexp > /dev/null 2>&1; then echo 'invalid Lisp policy was accepted'; exit 1; fi
+      - name: Pack
+        run: |
+          dotnet pack src/CapabilityGate/CapabilityGate.csproj --configuration Release --no-restore --output packages -p:PackageVersion="$PACKAGE_VERSION"
+          test -s "packages/AfrenAI.CapabilityGate.$PACKAGE_VERSION.nupkg"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: packages/*.nupkg
+          if-no-files-found: error
+
+  publish:
+    needs: [test]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+      # NuGet.org Trusted Publishing exchanges the GitHub OIDC token for a short-lived API key.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: packages
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 11.0.x
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push "packages/*.nupkg" --source https://nuget.pkg.github.com/AFREN-AI/index.json --api-key "$GITHUB_TOKEN" --skip-duplicate
+      - name: NuGet.org login (Trusted Publishing)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+      - name: Publish to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push "packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate

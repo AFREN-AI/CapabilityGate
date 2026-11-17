@@ -24,7 +24,13 @@ CaMeL separates a planner from a quarantined model, propagates data and control 
 
 ## Install and use
 
-The API is under development. Build from source with the .NET 10 SDK. CI installs the SDK on GitHub-hosted runners; this project does not require a local SDK installation.
+```sh
+dotnet add package AfrenAI.CapabilityGate
+```
+
+The package targets `net10.0` (LTS) and `net11.0`. To build from source, including tests on both frameworks, use the .NET 11 SDK with the .NET 10 runtime. CI installs both on GitHub-hosted runners; this project does not require a local SDK installation.
+
+Pushing a `v*` tag (for example `v1.0.0`) runs the full CI workflow and, once every check passes, publishes the tested package to NuGet.org and the AFREN-AI GitHub Packages feed. NuGet.org publishing uses [Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so no long-lived NuGet key is stored in the repository.
 
 The first release includes the .NET library only. A TypeScript wrapper can follow after the .NET contract and threat model stabilize.
 
